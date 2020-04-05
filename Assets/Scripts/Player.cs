@@ -109,12 +109,20 @@ public class Player : MonoBehaviour{
         }
     }
 
-    public void Shoot(Vector3 _viewDirection){
-        if (Physics.Raycast(shootOrigin.position, _viewDirection, out RaycastHit _hit, 25f)){
-            if (_hit.collider.CompareTag("Player")){
-                _hit.collider.GetComponent<Player>().TakeDamage(50f);
+    public void Shoot(Vector3 _aimOrigin, Vector3 _aimDirection){
+        if (Physics.Raycast(_aimOrigin, _aimDirection, out RaycastHit _preHit, 100f)){
+            Vector3 _shootDirection = (_preHit.point - shootOrigin.position).normalized;
+            if (Physics.Raycast(shootOrigin.position, _shootDirection, out RaycastHit _hit, 100f)){
+                if (_hit.collider.CompareTag("Player")){
+                    _hit.collider.GetComponent<Player>().TakeDamage(10f);
+                }
+                ServerSend.SpawnBullet(shootOrigin.position, _hit.point);
+                return;
             }
-        }
+            ServerSend.SpawnBullet(shootOrigin.position, _preHit.point);
+            return;
+        }        
+        ServerSend.SpawnBullet(shootOrigin.position, _aimOrigin + (_aimDirection * 1000f));
     }
 
     public void TakeDamage(float _damage){

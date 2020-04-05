@@ -27,8 +27,9 @@ public class ServerHandle
     }
 
     public static void PlayerShoot(int _fromClient, Packet _packet){
-        Vector3 _shootDirection = _packet.ReadVector3();
+        Vector3 _aimOrigin = _packet.ReadVector3();
+        Vector3 _aimDirection = _packet.ReadVector3();
 
-        Server.clients[_fromClient].player.Shoot(_shootDirection);
+        Server.clients[_fromClient].player.Shoot(_aimOrigin, _aimDirection);
     }
 }

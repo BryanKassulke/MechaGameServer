@@ -136,5 +136,14 @@ public class ServerSend {
             SendTCPDataToAll(_packet);
         }
     }
+
+    public static void SpawnBullet(Vector3 _origin, Vector3 _destination){
+        using (Packet _packet = new Packet((int)ServerPackets.spawnBullet)) {
+            _packet.Write(_origin);
+            _packet.Write(_destination);
+
+            SendTCPDataToAll(_packet);
+        }
+    }
     #endregion
 }
