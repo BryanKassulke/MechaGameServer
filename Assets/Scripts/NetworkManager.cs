@@ -29,6 +29,6 @@ public class NetworkManager : MonoBehaviour
     }
     
     public Player InstantiatePlayer(){
-        return Instantiate(playerPrefab, new Vector3(0, 0.5f, 0), Quaternion.identity).GetComponent<Player>();
+        return Instantiate(playerPrefab, new Vector3(0, 1f, 0), Quaternion.identity).GetComponent<Player>();
     }
 }

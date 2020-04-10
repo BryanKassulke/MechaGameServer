@@ -1,0 +1,52 @@
+    public void HandleInput(float _inputSensitivity, float _inputGravity){
+        // Virtual Joystick X and Y
+        if ((inputs[0] && inputs[1]) || (!inputs[0] && !inputs[1])){
+            inputDirection.y = Mathf.MoveTowards(inputDirection.y, 0f, _inputGravity);
+        } else {
+            if (inputs[0]){
+                if (inputDirection.y >= 0){
+                    inputDirection.y = Mathf.MoveTowards(inputDirection.y, 1f, _inputSensitivity);
+                } else {
+                    inputDirection.y = Mathf.MoveTowards(inputDirection.y, 1f, _inputSensitivity + _inputGravity);
+                }                
+            }
+            if (inputs[1]){
+                if (inputDirection.y <= 0){
+                    inputDirection.y = Mathf.MoveTowards(inputDirection.y, -1f, _inputSensitivity);
+                } else {
+                    inputDirection.y = Mathf.MoveTowards(inputDirection.y, -1f, _inputSensitivity + _inputGravity);
+                }
+            }
+        }
+
+        if ((inputs[2] && inputs[3]) || (!inputs[2] && !inputs[3])){
+            inputDirection.x = Mathf.MoveTowards(inputDirection.x, 0f, _inputGravity);
+        } else {
+            if (inputs[2]){
+                if (inputDirection.x >= 0){
+                    inputDirection.x = Mathf.MoveTowards(inputDirection.x, -1f, _inputSensitivity);
+                } else {
+                    inputDirection.x = Mathf.MoveTowards(inputDirection.x, -1f, _inputSensitivity + _inputGravity);
+                }                
+            }
+            if (inputs[3]){
+                if (inputDirection.x <= 0){
+                    inputDirection.x = Mathf.MoveTowards(inputDirection.x, 1f, _inputSensitivity);
+                } else {
+                    inputDirection.x = Mathf.MoveTowards(inputDirection.x, 1f, _inputSensitivity + _inputGravity);
+                }
+            }
+        }
+    }
+
+    
+    HandleState(state.HandleTransitions());
+    public void HandleState(PlayerState _state){
+        if (_state != null){
+            state.Exit();
+            state.Dispose();
+            state = _state;
+            state.Enter();
+        }
+        state.StateUpdate(tick);
+    }

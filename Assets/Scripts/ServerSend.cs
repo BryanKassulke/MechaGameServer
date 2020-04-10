@@ -66,20 +66,42 @@ public class ServerSend {
             SendTCPData(_toClient, _packet);
         }
     }
-
-    public static void PlayerPosition(Player _player) {
-        using (Packet _packet = new Packet((int)ServerPackets.playerPosition)) {
+    
+    public static void PlayerState(Player _player, StateMessage _stateMessage) {
+        using (Packet _packet = new Packet((int)ServerPackets.playerState)) {
             _packet.Write(_player.id);
-            _packet.Write(_player.transform.position);
+            _packet.Write(_stateMessage.tickNumber);
+            _packet.Write(_stateMessage.position);
+            _packet.Write(_stateMessage.rotation);
 
-            SendUDPDataToAll(_packet);
+            SendUDPData(_player.id, _packet);
+
+            PlayerPosition(_player, _stateMessage.position);
+            PlayerRotation(_player, _stateMessage.rotation);
         }
     }
 
-    public static void PlayerRotation(Player _player) {
-        using (Packet _packet = new Packet((int)ServerPackets.playerRotation)) {
+    /// <summary>Sends a player's updated position to all clients.</summary>
+    /// <param name="_player">The player whose position to update.</param>
+    private static void PlayerPosition(Player _player, Vector3 _position)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerPosition))
+        {
             _packet.Write(_player.id);
-            _packet.Write(_player.transform.rotation);
+            _packet.Write(_position);
+
+            SendUDPDataToAll(_player.id, _packet);
+        }
+    }
+
+    /// <summary>Sends a player's updated rotation to all clients except to himself (to avoid overwriting the local player's rotation).</summary>
+    /// <param name="_player">The player whose rotation to update.</param>
+    private static void PlayerRotation(Player _player, Quaternion _rotation)
+    {
+        using (Packet _packet = new Packet((int)ServerPackets.playerRotation))
+        {
+            _packet.Write(_player.id);
+            _packet.Write(_rotation);
 
             SendUDPDataToAll(_player.id, _packet);
         }

@@ -8,6 +8,7 @@ using UnityEngine;
 public enum ServerPackets {
     welcome = 1,
     spawnPlayer,
+    playerState,
     playerPosition,
     playerRotation,
     playerDisconnected,
@@ -22,7 +23,7 @@ public enum ServerPackets {
 /// <summary>Sent from client to server.</summary>
 public enum ClientPackets {
     welcomeReceived = 1,
-    playerMovement,
+    playerInput,
     playerShoot
 }
 
@@ -122,6 +123,11 @@ public class Packet : IDisposable {
     /// <summary>Adds an int to the packet.</summary>
     /// <param name="_value">The int to add.</param>
     public void Write(int _value) {
+        buffer.AddRange(BitConverter.GetBytes(_value));
+    }
+    /// <summary>Adds an unsigned int to the packet.</summary>
+    /// <param name="_value">The unsigned int to add.</param>
+    public void Write(uint _value) {
         buffer.AddRange(BitConverter.GetBytes(_value));
     }
     /// <summary>Adds a long to the packet.</summary>
@@ -225,6 +231,22 @@ public class Packet : IDisposable {
             return _value; // Return the int
         } else {
             throw new Exception("Could not read value of type 'int'!");
+        }
+    }
+
+    /// <summary>Reads an unsigned int from the packet.</summary>
+    /// <param name="_moveReadPos">Whether or not to move the buffer's read position.</param>
+    public uint ReadUInt(bool _moveReadPos = true) {
+        if (buffer.Count > readPos) {
+            // If there are unread bytes
+            uint _value = BitConverter.ToUInt32(readableBuffer, readPos); // Convert the bytes to an int
+            if (_moveReadPos) {
+                // If _moveReadPos is true
+                readPos += 4; // Increase readPos by 4 (because int is represented by 4 bytes ;)
+            }
+            return _value; // Return the int
+        } else {
+            throw new Exception("Could not read value of type 'uint'!");
         }
     }
 

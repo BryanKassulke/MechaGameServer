@@ -16,20 +16,22 @@ public class ServerHandle
         Server.clients[_fromClient].SendIntoGame(_username);
     }
 
-    public static void PlayerMovement(int _fromClient, Packet _packet) {
-        bool[] _inputs = new bool[_packet.ReadInt()];
-        for (int i = 0; i < _inputs.Length; i++) {
-            _inputs[i] = _packet.ReadBool();
-        }
-        Quaternion _rotation = _packet.ReadQuaternion();
-
-        Server.clients[_fromClient].player.SetInput(_inputs, _rotation);
+    public static void PlayerInput(int _fromClient, Packet _packet) {      
+        InputMessage _inputMessage;
+        _inputMessage.tickNumber = _packet.ReadUInt();
+        _inputMessage.inputs.timeStep = _packet.ReadFloat();
+        _inputMessage.inputs.w = _packet.ReadBool();
+        _inputMessage.inputs.s = _packet.ReadBool();
+        _inputMessage.inputs.a = _packet.ReadBool();
+        _inputMessage.inputs.d = _packet.ReadBool();
+        _inputMessage.inputs.space = _packet.ReadBool();
+        _inputMessage.inputs.camPosition = _packet.ReadVector3();
+        _inputMessage.inputs.camRotation = _packet.ReadQuaternion();
+        
+        Server.clients[_fromClient].player.AddToInputQueue(_inputMessage);
     }
 
     public static void PlayerShoot(int _fromClient, Packet _packet){
-        Vector3 _aimOrigin = _packet.ReadVector3();
-        Vector3 _aimDirection = _packet.ReadVector3();
-
-        Server.clients[_fromClient].player.Shoot(_aimOrigin, _aimDirection);
+        Server.clients[_fromClient].player.Shoot();
     }
 }
