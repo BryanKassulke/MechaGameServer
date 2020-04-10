@@ -42,11 +42,15 @@ public class Player : MonoBehaviour{
     public int itemAmount = 0;
     public int maxItemAmount = 3;
     public float moveSpeed = 5f;
+    public float gravity = -19.62f;
+    public float jumpVelocity = 9f;
 
     // Server logic state
     private Queue<InputMessage> serverInputMessages;
     private uint serverTick;
     private uint serverTickAccumulator;
+    private float yVelocity;
+
     public void Initialize(int _id, string _username) {
         id = _id;
         username = _username;
@@ -57,6 +61,8 @@ public class Player : MonoBehaviour{
         serverInputMessages = new Queue<InputMessage>();
         serverTick = 0;
         serverTickAccumulator = 0;
+
+        yVelocity = 0f;
     }
 
     private void FixedUpdate() {
@@ -72,7 +78,7 @@ public class Player : MonoBehaviour{
                 // Perform the input on the player
                 Move(_inputMessage.inputs);
                 camTransform.position = transform.position + _inputMessage.inputs.camOffset;
-                
+
                 ++_serverTick;
                 // 2. Send that shit off!!
                 StateMessage _stateMessage;
@@ -106,26 +112,37 @@ public class Player : MonoBehaviour{
         if (_inputs.d) {
             _inputDirection.x += 1;
         }
+
+        float _moveSpeed = moveSpeed * _inputs.timeStep;        
+        float _jumpVelocity = jumpVelocity * _inputs.timeStep;  
+        float _gravity = gravity * _inputs.timeStep * _inputs.timeStep;
+
         Vector3 _moveDirection = transform.right * _inputDirection.x + transform.forward * _inputDirection.y;
         if (_moveDirection.magnitude > 1f){
             _moveDirection = Vector3.ClampMagnitude(_moveDirection, 1f);
         }
-        _moveDirection *= moveSpeed;
-        _moveDirection *= _inputs.timeStep;
+        // Apply timestep to velocity
+        _moveDirection *= _moveSpeed;
 
-        //transform.Translate(_moveDirection);
+        if (controller.isGrounded){
+            yVelocity = 0f;
+            if (_inputs.space){
+                yVelocity = _jumpVelocity;
+            }
+        }
+        yVelocity += _gravity;
+        _moveDirection.y = yVelocity;
+
         controller.Move(_moveDirection);
-    }
-    
+    }    
 
     public void AddToInputQueue(InputMessage _inputMessage) {
         serverInputMessages.Enqueue(_inputMessage);
     }
 
-    public void Shoot(){
-        Vector3 _aimDirection = camTransform.forward;
+    public void Shoot(Vector3 _camPosition, Vector3 _lookDir){
         //TODO: Find a solution that requires less raycasts and feels less snappy
-        if (Physics.Raycast(camTransform.position, _aimDirection, out RaycastHit _preHit, 100f)){
+        if (Physics.Raycast(_camPosition, _lookDir, out RaycastHit _preHit, 100f)){
             Vector3 _shootDirection = (_preHit.point - shootOrigin.position).normalized;
             if (Physics.Raycast(shootOrigin.position, _shootDirection, out RaycastHit _hit, 100f)){
                 if (_hit.collider.CompareTag("Player")){
@@ -135,13 +152,13 @@ public class Player : MonoBehaviour{
             }
             ServerSend.SpawnBullet(shootOrigin.position, _preHit.point);
         } else {
-            Vector3 _direction = (camTransform.position + (_aimDirection * 100f)) - shootOrigin.position;
+            Vector3 _direction = (_camPosition + (_lookDir * 100f)) - shootOrigin.position;
             if (Physics.Raycast(shootOrigin.position, _direction, out RaycastHit _hit2, 100f)){
                 ServerSend.SpawnBullet(shootOrigin.position, _hit2.point);
             } else {
-                ServerSend.SpawnBullet(shootOrigin.position, camTransform.position + (_aimDirection * 100f));
+                ServerSend.SpawnBullet(shootOrigin.position, _camPosition + (_lookDir * 100f));
             }
-        }                
+        }
     }
 
     public void TakeDamage(float _damage){

@@ -32,6 +32,9 @@ public class ServerHandle
     }
 
     public static void PlayerShoot(int _fromClient, Packet _packet){
-        Server.clients[_fromClient].player.Shoot();
+        Vector3 _camPosition = _packet.ReadVector3();
+        Vector3 _lookDir = _packet.ReadVector3();
+        
+        Server.clients[_fromClient].player.Shoot(_camPosition, _lookDir);
     }
 }
