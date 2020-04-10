@@ -25,8 +25,8 @@ public class ServerHandle
         _inputMessage.inputs.a = _packet.ReadBool();
         _inputMessage.inputs.d = _packet.ReadBool();
         _inputMessage.inputs.space = _packet.ReadBool();
-        _inputMessage.inputs.camPosition = _packet.ReadVector3();
-        _inputMessage.inputs.camRotation = _packet.ReadQuaternion();
+        _inputMessage.inputs.camOffset = _packet.ReadVector3();
+        _inputMessage.inputs.lookDir = _packet.ReadVector3();
         
         Server.clients[_fromClient].player.AddToInputQueue(_inputMessage);
     }
