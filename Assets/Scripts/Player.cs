@@ -10,8 +10,8 @@ public struct Inputs{
     public bool a;
     public bool d;
     public bool space;
-    public Vector3 camPosition;
-    public Quaternion camRotation;
+    public Vector3 camOffset;
+    public Vector3 lookDir;
 }
 
 public struct InputMessage{
@@ -71,8 +71,10 @@ public class Player : MonoBehaviour{
             if (_tick >= serverTick){
                 // Perform the input on the player
                 Move(_inputMessage.inputs);
+                camTransform.position = transform.position + _inputMessage.inputs.camOffset;
+                
                 ++_serverTick;
-                // 2. Send that shit off
+                // 2. Send that shit off!!
                 StateMessage _stateMessage;
                 _stateMessage.tickNumber = _serverTick;
                 _stateMessage.position = transform.position;
@@ -81,15 +83,15 @@ public class Player : MonoBehaviour{
 
                 //this.server_display_player.transform.position = server_rigidbody.position;
                 //this.server_display_player.transform.rotation = server_rigidbody.rotation;
-            }
-            
+            }            
         }
-
         serverTick = _serverTick;
     }
 
     private void Move(Inputs _inputs){
-        //transform.rotation = Quaternion.Euler(0, _inputs.camRotation.eulerAngles.y, 0);
+        Quaternion _newRotation = Quaternion.LookRotation(_inputs.lookDir);
+        _newRotation = Quaternion.Euler(0, _newRotation.eulerAngles.y, 0);
+        transform.rotation = _newRotation;
 
         Vector2 _inputDirection = Vector2.zero;
         if (_inputs.w) {
